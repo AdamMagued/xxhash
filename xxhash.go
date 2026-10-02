@@ -65,6 +65,12 @@ func (d *Digest) ResetWithSeed(seed uint64) {
 	d.n = 0
 }
 
+// Copy returns a copy of d.
+func (d *Digest) Copy() *Digest {
+	cp := *d
+	return &cp
+}
+
 // Size always returns 8 bytes.
 func (d *Digest) Size() int { return 8 }
 

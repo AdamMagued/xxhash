@@ -165,6 +165,43 @@ func TestBinaryMarshaling(t *testing.T) {
 	}
 }
 
+func TestCopy(t *testing.T) {
+	d1 := New()
+	d1.WriteString("abc")
+	d2 := d1.Copy()
+
+	if got, want := d2.Sum64(), d1.Sum64(); got != want {
+		t.Fatalf("immediately after Copy, got 0x%x; want 0x%x", got, want)
+	}
+
+	d1.WriteString("def")
+	d2.WriteString("xyz")
+
+	if got, want := d1.Sum64(), Sum64String("abcdef"); got != want {
+		t.Fatalf("d1: got 0x%x; want 0x%x", got, want)
+	}
+	if got, want := d2.Sum64(), Sum64String("abcxyz"); got != want {
+		t.Fatalf("d2: got 0x%x; want 0x%x", got, want)
+	}
+
+	d0 := New()
+	d1 = New()
+	for i := 0; i < 64; i++ {
+		cp := d0.Copy()
+		if got, want := cp.Sum64(), d1.Sum64(); got != want {
+			t.Fatalf("after %d Writes, copied Digest gave sum 0x%x; want 0x%x", i, got, want)
+		}
+
+		cp.WriteString("junk")
+		if got, want := d0.Sum64(), d1.Sum64(); got != want {
+			t.Fatalf("after %d Writes and writing to copy, original Digest gave sum 0x%x; want 0x%x", i, got, want)
+		}
+
+		d0.Write([]byte{'a'})
+		d1.Write([]byte{'a'})
+	}
+}
+
 var sink uint64
 
 func TestAllocs(t *testing.T) {
